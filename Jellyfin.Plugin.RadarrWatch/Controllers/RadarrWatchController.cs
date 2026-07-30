@@ -55,7 +55,7 @@ public sealed class RadarrWatchController : ControllerBase
     }
 
     [HttpGet("UpcomingImage/{tmdbId:int}")]
-    [Authorize]
+    [AllowAnonymous]
     public async Task<IActionResult> GetUpcomingImage(
         int tmdbId,
         CancellationToken cancellationToken)
