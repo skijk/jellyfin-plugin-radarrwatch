@@ -16,7 +16,7 @@ public sealed class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
     }
 
     public override string Name => "Radarr Watch";
-    public override string Description => "Marks Radarr-monitored movies and supplies upcoming digital releases to JellySpotlight.";
+    public override string Description => "Radarr integration for Jellyfin Web. Requires File Transformation and Radarr; Jellyfin Enhanced and JellySpotlight integrations are optional.";
     public override Guid Id => Guid.Parse("943575e3-77a3-47dc-b1e7-4e17d52442e2");
     public static Plugin Instance { get; private set; } = null!;
 
