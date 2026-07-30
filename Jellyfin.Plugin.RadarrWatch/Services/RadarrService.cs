@@ -88,13 +88,13 @@ public sealed class RadarrService
         }
 
         var baseUri = GetBaseUri();
-        var imageUri = Uri.TryCreate(imagePath, UriKind.Absolute, out var absolute)
-            ? absolute
-            : new Uri(baseUri, imagePath.TrimStart('/'));
-        if (imageUri.Host != baseUri.Host || imageUri.Port != baseUri.Port)
-        {
-            return null;
-        }
+        // Radarr often reports artwork with its own internal hostname (for example
+        // localhost or a container name). Always keep the path but rebase it onto
+        // the administrator-configured Radarr origin.
+        var imagePathAndQuery = Uri.TryCreate(imagePath, UriKind.Absolute, out var absolute)
+            ? absolute.PathAndQuery
+            : imagePath;
+        var imageUri = new Uri(baseUri, imagePathAndQuery.TrimStart('/'));
 
         using var request = new HttpRequestMessage(HttpMethod.Get, imageUri);
         request.Headers.Add("X-Api-Key", Plugin.Instance.Configuration.RadarrApiKey.Trim());
