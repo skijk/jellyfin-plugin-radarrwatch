@@ -1,0 +1,91 @@
+<div id="RadarrWatchConfigPage"
+     data-role="page"
+     class="page type-interior pluginConfigurationPage"
+     data-require="emby-button,emby-input,emby-select">
+    <div data-role="content">
+        <div class="content-primary">
+            <form id="RadarrWatchForm">
+                <h1>Radarr Watch</h1>
+                <p>Mark movies already monitored by Radarr in Jellyfin Enhanced search.</p>
+
+                <div class="inputContainer">
+                    <label class="inputLabel inputLabelUnfocused" for="RadarrWatchUrl">Radarr URL</label>
+                    <input id="RadarrWatchUrl" is="emby-input" type="url" required />
+                    <div class="fieldDescription">Use the URL reachable from the Jellyfin server, for example http://radarr:7878.</div>
+                </div>
+
+                <div class="inputContainer">
+                    <label class="inputLabel inputLabelUnfocused" for="RadarrWatchApiKey">Radarr API key</label>
+                    <input id="RadarrWatchApiKey" is="emby-input" type="password" autocomplete="off" required />
+                    <div class="fieldDescription">Stored in Jellyfin's plugin configuration and never sent to users' browsers.</div>
+                </div>
+
+                <div class="inputContainer">
+                    <label class="inputLabel inputLabelUnfocused" for="RadarrWatchText">Button text</label>
+                    <input id="RadarrWatchText" is="emby-input" maxlength="40" />
+                    <div class="fieldDescription">For example Requested, Monitored or Bevakas.</div>
+                </div>
+
+                <div class="selectContainer">
+                    <label class="selectLabel" for="RadarrWatchCache">Radarr cache</label>
+                    <select id="RadarrWatchCache" is="emby-select" class="emby-select-withcolor emby-select">
+                        <option value="10">10 seconds</option>
+                        <option value="30">30 seconds</option>
+                        <option value="60">1 minute</option>
+                        <option value="120">2 minutes</option>
+                        <option value="300">5 minutes</option>
+                    </select>
+                </div>
+
+                <button is="emby-button" type="submit" class="raised button-submit block">Save</button>
+                <button is="emby-button" type="button" class="raised block" id="RadarrWatchTest">Test connection</button>
+            </form>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        (() => {
+            const pluginId = '943575e3-77a3-47dc-b1e7-4e17d52442e2';
+            const page = document.querySelector('#RadarrWatchConfigPage');
+            const form = page.querySelector('#RadarrWatchForm');
+
+            page.addEventListener('pageshow', async () => {
+                Dashboard.showLoadingMsg();
+                const config = await ApiClient.getPluginConfiguration(pluginId);
+                page.querySelector('#RadarrWatchUrl').value = config.RadarrUrl || '';
+                page.querySelector('#RadarrWatchApiKey').value = config.RadarrApiKey || '';
+                page.querySelector('#RadarrWatchText').value = config.DisplayText || 'Requested';
+                page.querySelector('#RadarrWatchCache').value = String(config.CacheSeconds || 30);
+                Dashboard.hideLoadingMsg();
+            });
+
+            form.addEventListener('submit', async event => {
+                event.preventDefault();
+                Dashboard.showLoadingMsg();
+                const config = await ApiClient.getPluginConfiguration(pluginId);
+                config.RadarrUrl = page.querySelector('#RadarrWatchUrl').value.trim();
+                config.RadarrApiKey = page.querySelector('#RadarrWatchApiKey').value.trim();
+                config.DisplayText = page.querySelector('#RadarrWatchText').value.trim() || 'Requested';
+                config.CacheSeconds = Number(page.querySelector('#RadarrWatchCache').value);
+                await ApiClient.updatePluginConfiguration(pluginId, config);
+                Dashboard.processPluginConfigurationUpdateResult();
+            });
+
+            page.querySelector('#RadarrWatchTest').addEventListener('click', async () => {
+                Dashboard.showLoadingMsg();
+                try {
+                    await ApiClient.ajax({
+                        type: 'POST',
+                        url: ApiClient.getUrl('RadarrWatch/Test'),
+                        dataType: 'json'
+                    });
+                    Dashboard.alert('Connection to Radarr succeeded.');
+                } catch (error) {
+                    Dashboard.alert(error?.responseJSON?.error || 'Could not connect to Radarr.');
+                } finally {
+                    Dashboard.hideLoadingMsg();
+                }
+            });
+        })();
+    </script>
+</div>
