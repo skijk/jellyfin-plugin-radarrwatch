@@ -49,16 +49,17 @@ public sealed class RadarrService
         return movies.Values
             .Where(movie => movie.Monitored
                 && !movie.HasFile
-                && movie.DigitalRelease is not null
-                && movie.DigitalRelease.Value.Date >= now)
-            .OrderBy(movie => movie.DigitalRelease)
+                && (movie.DigitalRelease is null || movie.DigitalRelease.Value.Date >= now))
+            .OrderBy(movie => movie.DigitalRelease is null ? 1 : 0)
+            .ThenBy(movie => movie.DigitalRelease)
+            .ThenBy(movie => movie.Year)
             .ThenBy(movie => movie.Title)
             .Take(Math.Clamp(limit, 1, 30))
             .Select(movie => new UpcomingMovie(
                 movie.TmdbId,
                 movie.Title,
                 movie.Year,
-                movie.DigitalRelease!.Value,
+                movie.DigitalRelease,
                 $"/RadarrWatch/UpcomingImage/{movie.TmdbId}"))
             .ToArray();
     }

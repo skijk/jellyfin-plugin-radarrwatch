@@ -49,5 +49,5 @@ public sealed record UpcomingMovie(
     int TmdbId,
     string Title,
     int Year,
-    DateTimeOffset DigitalRelease,
+    DateTimeOffset? DigitalRelease,
     string ImageUrl);
