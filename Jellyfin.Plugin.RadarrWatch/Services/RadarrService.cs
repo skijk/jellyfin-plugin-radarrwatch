@@ -73,37 +73,78 @@ public sealed class RadarrService
             return null;
         }
 
-        var imagePath = movie.Images
+        var image = movie.Images
             .FirstOrDefault(image => string.Equals(
                 image.CoverType,
                 "fanart",
-                StringComparison.OrdinalIgnoreCase))?.Url
+                StringComparison.OrdinalIgnoreCase))
             ?? movie.Images.FirstOrDefault(image => string.Equals(
                 image.CoverType,
                 "poster",
-                StringComparison.OrdinalIgnoreCase))?.Url;
-        if (string.IsNullOrWhiteSpace(imagePath))
+                StringComparison.OrdinalIgnoreCase));
+        if (image is null)
         {
             return null;
         }
 
         var baseUri = GetBaseUri();
-        // Radarr often reports artwork with its own internal hostname (for example
-        // localhost or a container name). Always keep the path but rebase it onto
-        // the administrator-configured Radarr origin.
-        var imagePathAndQuery = Uri.TryCreate(imagePath, UriKind.Absolute, out var absolute)
-            ? absolute.PathAndQuery
-            : imagePath;
-        var imageUri = new Uri(baseUri, imagePathAndQuery.TrimStart('/'));
+        if (!string.IsNullOrWhiteSpace(image.Url))
+        {
+            // Radarr often reports artwork with its own internal hostname. Keep
+            // the path but rebase it onto the administrator-configured origin.
+            var imagePathAndQuery = Uri.TryCreate(image.Url, UriKind.Absolute, out var absolute)
+                ? absolute.PathAndQuery
+                : image.Url;
+            var localImage = await FetchImageAsync(
+                new Uri(baseUri, imagePathAndQuery.TrimStart('/')),
+                includeApiKey: true,
+                cancellationToken).ConfigureAwait(false);
+            if (localImage is not null)
+            {
+                return localImage;
+            }
+        }
 
+        if (!Uri.TryCreate(image.RemoteUrl, UriKind.Absolute, out var remoteUri)
+            || remoteUri.Scheme != Uri.UriSchemeHttps
+            || !string.Equals(remoteUri.Host, "image.tmdb.org", StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+
+        return await FetchImageAsync(
+            remoteUri,
+            includeApiKey: false,
+            cancellationToken).ConfigureAwait(false);
+    }
+
+    private async Task<(byte[] Content, string ContentType)?> FetchImageAsync(
+        Uri imageUri,
+        bool includeApiKey,
+        CancellationToken cancellationToken)
+    {
         using var request = new HttpRequestMessage(HttpMethod.Get, imageUri);
-        request.Headers.Add("X-Api-Key", Plugin.Instance.Configuration.RadarrApiKey.Trim());
-        using var response = await _httpClient.SendAsync(request, cancellationToken)
+        if (includeApiKey)
+        {
+            request.Headers.Add("X-Api-Key", Plugin.Instance.Configuration.RadarrApiKey.Trim());
+        }
+
+        using var response = await _httpClient.SendAsync(
+            request,
+            HttpCompletionOption.ResponseHeadersRead,
+            cancellationToken)
             .ConfigureAwait(false);
-        response.EnsureSuccessStatusCode();
+        var contentType = response.Content.Headers.ContentType?.MediaType;
+        if (!response.IsSuccessStatusCode
+            || string.IsNullOrWhiteSpace(contentType)
+            || !contentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+
         return (
             await response.Content.ReadAsByteArrayAsync(cancellationToken).ConfigureAwait(false),
-            response.Content.Headers.ContentType?.MediaType ?? "image/jpeg");
+            contentType);
     }
 
     private async Task<IReadOnlyDictionary<int, RadarrMovie>> GetMoviesAsync(
