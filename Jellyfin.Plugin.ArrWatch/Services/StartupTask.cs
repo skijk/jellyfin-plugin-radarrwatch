@@ -3,7 +3,7 @@ using System.Runtime.Loader;
 using MediaBrowser.Model.Tasks;
 using Microsoft.Extensions.Logging;
 
-namespace Jellyfin.Plugin.RadarrWatch.Services;
+namespace Jellyfin.Plugin.ArrWatch.Services;
 
 public sealed class StartupTask : IScheduledTask
 {
@@ -16,9 +16,9 @@ public sealed class StartupTask : IScheduledTask
         _logger = logger;
     }
 
-    public string Name => "Radarr Watch Startup";
-    public string Key => "Jellyfin.Plugin.RadarrWatch.Startup";
-    public string Description => "Registers Radarr Watch with Jellyfin Web.";
+    public string Name => "Arr Watch Startup";
+    public string Key => "Jellyfin.Plugin.ArrWatch.Startup";
+    public string Description => "Registers Arr Watch with Jellyfin Web.";
     public string Category => "Startup Services";
 
     public Task ExecuteAsync(
@@ -46,7 +46,7 @@ public sealed class StartupTask : IScheduledTask
         if (writeServiceType is null || delegateType is null || serviceProvider is null)
         {
             _logger.LogWarning(
-                "File Transformation was not found. Radarr Watch cannot be injected.");
+                "File Transformation was not found. Arr Watch cannot be injected.");
             return Task.CompletedTask;
         }
 
@@ -63,7 +63,7 @@ public sealed class StartupTask : IScheduledTask
 
         var callback = Delegate.CreateDelegate(delegateType, transformMethod);
         updateMethod.Invoke(writeService, [TransformationId, "index.html", callback]);
-        _logger.LogInformation("Radarr Watch registered its Jellyfin Web transformation.");
+        _logger.LogInformation("Arr Watch registered its Jellyfin Web transformation.");
         progress.Report(100);
         return Task.CompletedTask;
     }

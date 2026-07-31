@@ -1,11 +1,11 @@
 using System.Globalization;
-using Jellyfin.Plugin.RadarrWatch.Configuration;
+using Jellyfin.Plugin.ArrWatch.Configuration;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Serialization;
 
-namespace Jellyfin.Plugin.RadarrWatch;
+namespace Jellyfin.Plugin.ArrWatch;
 
 public sealed class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
 {
@@ -15,8 +15,8 @@ public sealed class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
         Instance = this;
     }
 
-    public override string Name => "Radarr Watch";
-    public override string Description => "Radarr integration for Jellyfin Web. Requires File Transformation and Radarr; Jellyfin Enhanced and JellySpotlight integrations are optional.";
+    public override string Name => "Arr Watch";
+    public override string Description => "Optional Radarr and Sonarr integrations for monitored titles, digital movie releases and season premieres in Jellyfin Web.";
     public override Guid Id => Guid.Parse("943575e3-77a3-47dc-b1e7-4e17d52442e2");
     public static Plugin Instance { get; private set; } = null!;
 
@@ -27,7 +27,7 @@ public sealed class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
             new PluginPageInfo
             {
                 Name = Name,
-                DisplayName = "Radarr Watch",
+                DisplayName = "Arr Watch",
                 EmbeddedResourcePath = string.Format(
                     CultureInfo.InvariantCulture,
                     "{0}.Configuration.configPage.html",

@@ -1,8 +1,8 @@
 using System.Net.Http.Json;
-using Jellyfin.Plugin.RadarrWatch.Models;
+using Jellyfin.Plugin.ArrWatch.Models;
 using Microsoft.Extensions.Logging;
 
-namespace Jellyfin.Plugin.RadarrWatch.Services;
+namespace Jellyfin.Plugin.ArrWatch.Services;
 
 public sealed class RadarrService
 {
@@ -40,8 +40,10 @@ public sealed class RadarrService
         return true;
     }
 
-    public async Task<IReadOnlyList<UpcomingMovie>> GetUpcomingAsync(
-        int limit,
+    public bool IsConfigured => Plugin.Instance.Configuration.RadarrEnabled
+        && !string.IsNullOrWhiteSpace(Plugin.Instance.Configuration.RadarrApiKey);
+
+    public async Task<IReadOnlyList<UpcomingItem>> GetUpcomingAsync(
         CancellationToken cancellationToken)
     {
         var movies = await GetMoviesAsync(cancellationToken).ConfigureAwait(false);
@@ -53,13 +55,17 @@ public sealed class RadarrService
                 && movie.DigitalRelease.Value.Date >= now)
             .OrderBy(movie => movie.DigitalRelease)
             .ThenBy(movie => movie.Title)
-            .Take(Math.Clamp(limit, 1, 30))
-            .Select(movie => new UpcomingMovie(
+            .Select(movie => new UpcomingItem(
+                "movie",
+                "radarr",
                 movie.TmdbId,
+                movie.TmdbId,
+                null,
                 movie.Title,
                 movie.Year,
-                movie.DigitalRelease,
-                $"/RadarrWatch/UpcomingImage/{movie.TmdbId}"))
+                null,
+                movie.DigitalRelease!.Value,
+                $"/ArrWatch/UpcomingImage/radarr/{movie.TmdbId}"))
             .ToArray();
     }
 

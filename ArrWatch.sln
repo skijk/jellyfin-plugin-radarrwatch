@@ -2,7 +2,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.Plugin.RadarrWatch", "Jellyfin.Plugin.RadarrWatch\Jellyfin.Plugin.RadarrWatch.csproj", "{4B3887B9-385D-4FE8-AB02-76C18327581D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.Plugin.ArrWatch", "Jellyfin.Plugin.ArrWatch\Jellyfin.Plugin.ArrWatch.csproj", "{4B3887B9-385D-4FE8-AB02-76C18327581D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

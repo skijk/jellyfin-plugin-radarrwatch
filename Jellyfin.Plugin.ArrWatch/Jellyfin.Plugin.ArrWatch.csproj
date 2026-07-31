@@ -1,9 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
-    <RootNamespace>Jellyfin.Plugin.RadarrWatch</RootNamespace>
+    <RootNamespace>Jellyfin.Plugin.ArrWatch</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <NuGetAudit>false</NuGetAudit>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);1591</NoWarn>
   </PropertyGroup>
@@ -18,9 +19,9 @@
   <ItemGroup>
     <None Remove="Configuration\configPage.html" />
     <EmbeddedResource Include="Configuration\configPage.html" />
-    <None Remove="Web\radarr-watch.css" />
-    <EmbeddedResource Include="Web\radarr-watch.css" />
-    <None Remove="Web\radarr-watch.js" />
-    <EmbeddedResource Include="Web\radarr-watch.js" />
+    <None Remove="Web\arr-watch.css" />
+    <EmbeddedResource Include="Web\arr-watch.css" />
+    <None Remove="Web\arr-watch.js" />
+    <EmbeddedResource Include="Web\arr-watch.js" />
   </ItemGroup>
 </Project>

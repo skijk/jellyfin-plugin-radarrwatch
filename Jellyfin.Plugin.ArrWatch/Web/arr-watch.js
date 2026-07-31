@@ -13,7 +13,7 @@
         button.classList.remove(
             'jellyseerr-button-request',
             'jellyseerr-button-error');
-        button.classList.add('jellyseerr-button-pending', 'radarr-watch-monitored');
+        button.classList.add('jellyseerr-button-pending', 'arr-watch-monitored');
         button.setAttribute(
             'aria-label',
             status.hasFile ? 'Available in Radarr' : 'Monitored in Radarr');
@@ -24,7 +24,7 @@
         const label = document.createElement('span');
         label.textContent = displayText || 'Requested';
         const icon = document.createElement('span');
-        icon.className = 'material-icons radarr-watch-icon';
+        icon.className = 'material-icons arr-watch-icon';
         icon.setAttribute('aria-hidden', 'true');
         icon.textContent = status.hasFile ? 'check_circle' : 'schedule';
         button.append(label, icon);
@@ -51,7 +51,7 @@
         try {
             const response = await ApiClient.ajax({
                 type: 'GET',
-                url: ApiClient.getUrl('RadarrWatch/Status', {
+                url: ApiClient.getUrl('ArrWatch/Status', {
                     tmdbIds: ids.join(',')
                 }),
                 dataType: 'json'
@@ -76,7 +76,7 @@
             });
             applyKnown();
         } catch (error) {
-            console.debug('Radarr Watch status lookup failed', error);
+            console.debug('Arr Watch status lookup failed', error);
         }
 
         if (pending.size) timer = window.setTimeout(flush, 50);

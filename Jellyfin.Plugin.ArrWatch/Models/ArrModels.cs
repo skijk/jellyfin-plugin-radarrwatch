@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace Jellyfin.Plugin.RadarrWatch.Models;
+namespace Jellyfin.Plugin.ArrWatch.Models;
 
 public sealed class RadarrMovie
 {
@@ -45,9 +45,14 @@ public sealed record MovieWatchStatus(int TmdbId, bool Monitored, bool HasFile);
 
 public sealed record WatchStatusResponse(string DisplayText, IReadOnlyList<MovieWatchStatus> Movies);
 
-public sealed record UpcomingMovie(
-    int TmdbId,
+public sealed record UpcomingItem(
+    string MediaType,
+    string Source,
+    int SourceId,
+    int? TmdbId,
+    int? TvdbId,
     string Title,
     int Year,
-    DateTimeOffset? DigitalRelease,
+    int? SeasonNumber,
+    DateTimeOffset ReleaseDate,
     string ImageUrl);

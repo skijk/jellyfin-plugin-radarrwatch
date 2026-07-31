@@ -1,0 +1,9 @@
+.jellyseerr-request-button.arr-watch-monitored {
+    cursor: default;
+    opacity: 1;
+}
+
+.jellyseerr-request-button.arr-watch-monitored .arr-watch-icon {
+    margin-inline-start: .35rem;
+    font-size: 1.1em;
+}

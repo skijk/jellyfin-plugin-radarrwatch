@@ -1,0 +1,145 @@
+<div id="ArrWatchConfigPage"
+     data-role="page"
+     class="page type-interior pluginConfigurationPage"
+     data-require="emby-button,emby-input,emby-select,emby-checkbox">
+    <div data-role="content">
+        <div class="content-primary">
+            <form id="ArrWatchForm">
+                <h1>Arr Watch</h1>
+                <p>Connect Radarr for movies and Sonarr for series. Each integration is optional and cached independently.</p>
+
+                <h2>Radarr</h2>
+                <div class="checkboxContainer checkboxContainer-withDescription">
+                    <label class="emby-checkbox-label">
+                        <input id="ArrWatchRadarrEnabled" type="checkbox" is="emby-checkbox" />
+                        <span>Enable Radarr</span>
+                    </label>
+                    <div class="fieldDescription">Supplies monitored movie status and confirmed future digital releases.</div>
+                </div>
+                <div class="inputContainer">
+                    <label class="inputLabel inputLabelUnfocused" for="ArrWatchRadarrUrl">Radarr URL</label>
+                    <input id="ArrWatchRadarrUrl" is="emby-input" type="url" />
+                    <div class="fieldDescription">Use the URL reachable from the Jellyfin server, for example http://radarr:7878.</div>
+                </div>
+                <div class="inputContainer">
+                    <label class="inputLabel inputLabelUnfocused" for="ArrWatchRadarrApiKey">Radarr API key</label>
+                    <input id="ArrWatchRadarrApiKey" is="emby-input" type="password" autocomplete="off" />
+                </div>
+                <button is="emby-button" type="button" class="raised block" data-test-source="radarr">Test Radarr</button>
+
+                <h2>Sonarr</h2>
+                <div class="checkboxContainer checkboxContainer-withDescription">
+                    <label class="emby-checkbox-label">
+                        <input id="ArrWatchSonarrEnabled" type="checkbox" is="emby-checkbox" />
+                        <span>Enable Sonarr</span>
+                    </label>
+                    <div class="fieldDescription">Supplies monitored future season premieres. Specials and individual later episodes are excluded.</div>
+                </div>
+                <div class="inputContainer">
+                    <label class="inputLabel inputLabelUnfocused" for="ArrWatchSonarrUrl">Sonarr URL</label>
+                    <input id="ArrWatchSonarrUrl" is="emby-input" type="url" />
+                    <div class="fieldDescription">Use the URL reachable from the Jellyfin server, for example http://sonarr:8989.</div>
+                </div>
+                <div class="inputContainer">
+                    <label class="inputLabel inputLabelUnfocused" for="ArrWatchSonarrApiKey">Sonarr API key</label>
+                    <input id="ArrWatchSonarrApiKey" is="emby-input" type="password" autocomplete="off" />
+                </div>
+                <button is="emby-button" type="button" class="raised block" data-test-source="sonarr">Test Sonarr</button>
+
+                <h2>Shared settings</h2>
+                <div class="inputContainer">
+                    <label class="inputLabel inputLabelUnfocused" for="ArrWatchText">Movie request button text</label>
+                    <input id="ArrWatchText" is="emby-input" maxlength="40" />
+                    <div class="fieldDescription">Used for Radarr-monitored movies in Jellyfin Enhanced search.</div>
+                </div>
+                <div class="selectContainer">
+                    <label class="selectLabel" for="ArrWatchCache">Integration cache</label>
+                    <select id="ArrWatchCache" is="emby-select" class="emby-select-withcolor emby-select">
+                        <option value="10">10 seconds</option>
+                        <option value="30">30 seconds</option>
+                        <option value="60">1 minute</option>
+                        <option value="120">2 minutes</option>
+                        <option value="300">5 minutes</option>
+                    </select>
+                </div>
+                <div class="fieldDescription">API keys are stored in Jellyfin's plugin configuration and never sent to users' browsers.</div>
+                <button is="emby-button" type="submit" class="raised button-submit block">Save</button>
+            </form>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        (() => {
+            const pluginId = '943575e3-77a3-47dc-b1e7-4e17d52442e2';
+            const page = document.querySelector('#ArrWatchConfigPage');
+            const form = page.querySelector('#ArrWatchForm');
+
+            page.addEventListener('pageshow', async () => {
+                Dashboard.showLoadingMsg();
+                try {
+                    const config = await ApiClient.getPluginConfiguration(pluginId);
+                    page.querySelector('#ArrWatchRadarrEnabled').checked = config.RadarrEnabled ?? true;
+                    page.querySelector('#ArrWatchRadarrUrl').value = config.RadarrUrl || 'http://radarr:7878';
+                    page.querySelector('#ArrWatchRadarrApiKey').value = config.RadarrApiKey || '';
+                    page.querySelector('#ArrWatchSonarrEnabled').checked = config.SonarrEnabled ?? false;
+                    page.querySelector('#ArrWatchSonarrUrl').value = config.SonarrUrl || 'http://sonarr:8989';
+                    page.querySelector('#ArrWatchSonarrApiKey').value = config.SonarrApiKey || '';
+                    page.querySelector('#ArrWatchText').value = config.DisplayText || 'Requested';
+                    page.querySelector('#ArrWatchCache').value = String(config.CacheSeconds || 30);
+                } finally {
+                    Dashboard.hideLoadingMsg();
+                }
+            });
+
+            form.addEventListener('submit', async event => {
+                event.preventDefault();
+                const radarrEnabled = page.querySelector('#ArrWatchRadarrEnabled').checked;
+                const sonarrEnabled = page.querySelector('#ArrWatchSonarrEnabled').checked;
+                const radarrApiKey = page.querySelector('#ArrWatchRadarrApiKey').value.trim();
+                const sonarrApiKey = page.querySelector('#ArrWatchSonarrApiKey').value.trim();
+                if ((radarrEnabled && !radarrApiKey) || (sonarrEnabled && !sonarrApiKey)) {
+                    Dashboard.alert('Each enabled integration requires an API key.');
+                    return;
+                }
+
+                Dashboard.showLoadingMsg();
+                try {
+                    const config = await ApiClient.getPluginConfiguration(pluginId);
+                    config.RadarrEnabled = radarrEnabled;
+                    config.RadarrUrl = page.querySelector('#ArrWatchRadarrUrl').value.trim();
+                    config.RadarrApiKey = radarrApiKey;
+                    config.SonarrEnabled = sonarrEnabled;
+                    config.SonarrUrl = page.querySelector('#ArrWatchSonarrUrl').value.trim();
+                    config.SonarrApiKey = sonarrApiKey;
+                    config.DisplayText = page.querySelector('#ArrWatchText').value.trim() || 'Requested';
+                    config.CacheSeconds = Number(page.querySelector('#ArrWatchCache').value);
+                    await ApiClient.updatePluginConfiguration(pluginId, config);
+                    Dashboard.processPluginConfigurationUpdateResult();
+                } catch (error) {
+                    Dashboard.alert(error?.message || 'Arr Watch settings could not be saved.');
+                } finally {
+                    Dashboard.hideLoadingMsg();
+                }
+            });
+
+            page.querySelectorAll('[data-test-source]').forEach(button => {
+                button.addEventListener('click', async () => {
+                    const source = button.getAttribute('data-test-source');
+                    Dashboard.showLoadingMsg();
+                    try {
+                        await ApiClient.ajax({
+                            type: 'POST',
+                            url: ApiClient.getUrl('ArrWatch/Test/' + source),
+                            dataType: 'json'
+                        });
+                        Dashboard.alert('Connection to ' + (source === 'radarr' ? 'Radarr' : 'Sonarr') + ' succeeded.');
+                    } catch (error) {
+                        Dashboard.alert(error?.responseJSON?.error || 'Could not connect to ' + source + '. Save the settings before testing.');
+                    } finally {
+                        Dashboard.hideLoadingMsg();
+                    }
+                });
+            });
+        })();
+    </script>
+</div>
