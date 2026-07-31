@@ -74,19 +74,52 @@ public sealed class SonarrService
                 candidate.CoverType,
                 "poster",
                 StringComparison.OrdinalIgnoreCase));
-        if (image is null || string.IsNullOrWhiteSpace(image.Url))
+        if (image is null)
         {
             return null;
         }
 
         var baseUri = GetBaseUri();
-        var pathAndQuery = Uri.TryCreate(image.Url, UriKind.Absolute, out var absolute)
-            ? absolute.PathAndQuery
-            : image.Url;
-        using var request = new HttpRequestMessage(
-            HttpMethod.Get,
-            new Uri(baseUri, pathAndQuery.TrimStart('/')));
-        request.Headers.Add("X-Api-Key", Plugin.Instance.Configuration.SonarrApiKey.Trim());
+        if (!string.IsNullOrWhiteSpace(image.Url))
+        {
+            var pathAndQuery = Uri.TryCreate(image.Url, UriKind.Absolute, out var absolute)
+                ? absolute.PathAndQuery
+                : image.Url;
+            var localImage = await FetchImageAsync(
+                new Uri(baseUri, pathAndQuery.TrimStart('/')),
+                includeApiKey: true,
+                cancellationToken).ConfigureAwait(false);
+            if (localImage is not null)
+            {
+                return localImage;
+            }
+        }
+
+        if (!Uri.TryCreate(image.RemoteUrl, UriKind.Absolute, out var remoteUri)
+            || remoteUri.Scheme != Uri.UriSchemeHttps
+            || (!string.Equals(remoteUri.Host, "artworks.thetvdb.com", StringComparison.OrdinalIgnoreCase)
+                && !string.Equals(remoteUri.Host, "image.tmdb.org", StringComparison.OrdinalIgnoreCase)))
+        {
+            return null;
+        }
+
+        return await FetchImageAsync(
+            remoteUri,
+            includeApiKey: false,
+            cancellationToken).ConfigureAwait(false);
+    }
+
+    private async Task<(byte[] Content, string ContentType)?> FetchImageAsync(
+        Uri imageUri,
+        bool includeApiKey,
+        CancellationToken cancellationToken)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Get, imageUri);
+        if (includeApiKey)
+        {
+            request.Headers.Add("X-Api-Key", Plugin.Instance.Configuration.SonarrApiKey.Trim());
+        }
+
         using var response = await _httpClient.SendAsync(
             request,
             HttpCompletionOption.ResponseHeadersRead,

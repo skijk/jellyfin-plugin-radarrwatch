@@ -48,6 +48,9 @@ Injector.
 
 API keys remain server-side. Upcoming artwork is proxied through Jellyfin, so
 internal Radarr and Sonarr addresses are never exposed to web clients.
+If Sonarr's local MediaCover cache cannot serve an image, Arr Watch safely
+falls back to the HTTPS artwork URL supplied by Sonarr from a trusted TVDB or
+TMDB image host.
 
 ## API
 

@@ -57,4 +57,7 @@ public sealed class SonarrImage
 
     [JsonPropertyName("url")]
     public string Url { get; set; } = string.Empty;
+
+    [JsonPropertyName("remoteUrl")]
+    public string RemoteUrl { get; set; } = string.Empty;
 }

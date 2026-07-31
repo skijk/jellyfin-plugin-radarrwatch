@@ -22,8 +22,8 @@ public static partial class WebInjection
         }
 
         const string assets = """
-            <link data-arr-watch rel="stylesheet" href="/ArrWatch/Client.css?v=0.3.0.0">
-            <script data-arr-watch defer src="/ArrWatch/Client.js?v=0.3.0.0"></script>
+            <link data-arr-watch rel="stylesheet" href="/ArrWatch/Client.css?v=0.3.1.0">
+            <script data-arr-watch defer src="/ArrWatch/Client.js?v=0.3.1.0"></script>
             """;
         var transformed = HeadEndRegex().Replace(source, $"{assets}</head>", 1);
         var bytes = Encoding.UTF8.GetBytes(transformed);
